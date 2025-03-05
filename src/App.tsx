@@ -1,7 +1,7 @@
 import React from "react";
 import { TaskProvider } from "./context/TaskContext";
 import { TaskList } from "./components/TaskList";
-// import { TaskForm } from "./components/TaskForm";
+import { TaskForm } from "./components/TaskForm";
 
 const App: React.FC = () => {
   return (
@@ -9,7 +9,7 @@ const App: React.FC = () => {
       <div>
         <h1>Task Management App</h1>
         {/*for add task*/}
-        {/* <TaskForm /> */}
+        <TaskForm />
         <TaskList />
       </div>
     </TaskProvider>
