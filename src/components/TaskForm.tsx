@@ -3,6 +3,9 @@ import { TaskPriorities } from "../utils/taskHelper";
 import { useTasks } from "../context/TaskContext";
 import { Task } from "../types/task";
 
+/*
+  這裡採用不用lib的方式，直接在TaskForm中實作新增Task的功能，當然也可以使用Formik或是React Hook Form等lib
+*/
 export const TaskForm: React.FC = () => {
   const { addTask } = useTasks();
   const handleAddTask = useCallback((formData: FormData) => {

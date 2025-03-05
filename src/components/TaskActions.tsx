@@ -2,6 +2,9 @@ import { useCallback } from "react";
 import { Task } from "../types/task";
 import { useTasks } from "../context/TaskContext";
 
+/*
+  將原本的TaskActions從TaskList分離，以利後續的優化
+*/
 export const TaskActions: React.FC<{ task: Task }> = ({ task }) => {
   const { deleteTask, updateTask } = useTasks();
   const handleDelete = useCallback(() => {

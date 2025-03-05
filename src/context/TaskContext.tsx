@@ -56,8 +56,10 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const updateTask = useCallback((id: string, updates: Partial<Task>) => {
+    // 修改updateTask的邏輯，將修改的邏輯放入setTasks，以解除task的依賴，別且避免潛在的bug
     setTasks((prevTasks) => {
       const targetIndex = prevTasks.findIndex((task) => task.id === id);
+      // 只更新特定的task，避免未來優化上產生問題
       if (targetIndex !== -1) {
         let newTasks = [...prevTasks];
         newTasks[targetIndex] = {
@@ -72,9 +74,12 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const deleteTask = useCallback((id: string) => {
+    // 修改deleteTask的邏輯，將刪除的邏輯放入setTasks，以解除task的依賴，別且避免潛在的bug
     setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
   }, []);
 
+  // 移除原本的filterTasks，將其放到TaskList中
+  // 移除不必要的dependency
   const contextValue = useMemo(
     () => ({
       tasks,
@@ -82,9 +87,8 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
       updateTask,
       deleteTask,
     }),
-    [tasks, addTask, updateTask, deleteTask]
+    [tasks]
   );
-
   return (
     <TaskContext.Provider value={contextValue}>{children}</TaskContext.Provider>
   );
