@@ -13,7 +13,6 @@ interface TaskContextType {
   addTask: (task: Omit<Task, "id" | "createdAt">) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
   deleteTask: (id: string) => void;
-  filterTasks: (status?: Task["status"], priority?: Task["priority"]) => Task[];
 }
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
@@ -25,7 +24,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
     {
       id: uuidv4(),
       title: "Initial Task",
-      status: "todo111",
+      status: "todo",
       priority: "medium",
       createdAt: new Date(),
       description: "This is a sample task to start with",
@@ -56,38 +55,25 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
     setTasks((prevTasks) => [...prevTasks, newTask]);
   }, []);
 
-  const updateTask = useCallback(
-    (id: string, updates: Partial<Task>) => {
-      setTasks(
-        tasks.map((task) =>
-          task.id === id ? { ...task, ...updates, updatedAt: new Date() } : task
-        )
-      );
-    },
-    [tasks]
-  );
-
-  const deleteTask = useCallback(
-    (id: string) => {
-      const index = tasks.findIndex((task) => task.id === id);
-      if (index !== -1) {
-        tasks.splice(index, 1);
-        setTasks([...tasks]);
+  const updateTask = useCallback((id: string, updates: Partial<Task>) => {
+    setTasks((prevTasks) => {
+      const targetIndex = prevTasks.findIndex((task) => task.id === id);
+      if (targetIndex !== -1) {
+        let newTasks = [...prevTasks];
+        newTasks[targetIndex] = {
+          ...prevTasks[targetIndex],
+          ...updates,
+          updatedAt: new Date(),
+        };
+        return newTasks;
       }
-    },
-    [tasks]
-  );
+      return prevTasks;
+    });
+  }, []);
 
-  const filterTasks = useCallback(
-    (status?: Task["status"], priority?: Task["priority"]) => {
-      return tasks.filter(
-        (task) =>
-          (!status || task.status === status) &&
-          (!priority || task.priority === priority)
-      );
-    },
-    [tasks]
-  );
+  const deleteTask = useCallback((id: string) => {
+    setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
+  }, []);
 
   const contextValue = useMemo(
     () => ({
@@ -95,9 +81,8 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
       addTask,
       updateTask,
       deleteTask,
-      filterTasks,
     }),
-    [tasks, addTask, updateTask, deleteTask, filterTasks]
+    [tasks, addTask, updateTask, deleteTask]
   );
 
   return (
