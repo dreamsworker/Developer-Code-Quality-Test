@@ -1,14 +1,19 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { useTasks } from "../context/TaskContext";
 import { Task } from "../types/task";
+import { TaskActions } from "./TaskActions";
+import {
+  TaskPriorities,
+  TaskPrioritiesTextMap,
+  TaskStatus,
+  TaskStatusTextMap,
+} from "../utils/taskHelper";
 
-export const TaskList: React.FC = () => {
-  const { tasks, deleteTask, updateTask } = useTasks();
+const useTasksFilter = (tasks: Task[]) => {
   const [filter, setFilter] = useState<{
     status?: Task["status"];
     priority?: Task["priority"];
   }>({});
-
   const filteredTasks = useMemo(() => {
     return tasks.filter(
       (task) =>
@@ -17,75 +22,65 @@ export const TaskList: React.FC = () => {
     );
   }, [tasks, filter]);
 
-  const renderTaskActions = (task: Task) => {
-    const handleDelete = () => {
-      // Potential UX anti-pattern
-      const confirmDelete = window.confirm(`Delete task "${task.title}"?`);
-      if (confirmDelete) {
-        deleteTask(task.id);
-      }
-    };
-
-    const handleStatusChange = () => {
-      const statusMap: Record<Task["status"], Task["status"]> = {
-        todo: "in-progress",
-        "in-progress": "done",
-        done: "todo",
-      };
-      updateTask(task.id, { status: statusMap[task.status] });
-    };
-
-    return (
-      <>
-        <button
-          className="border border-black rounded-md p-1"
-          onClick={handleStatusChange}
-        >
-          Change Status
-        </button>
-        <button
-          className="border border-black rounded-md p-1"
-          onClick={handleDelete}
-        >
-          Delete
-        </button>
-      </>
-    );
+  const handleSetFilter = (
+    filed: keyof typeof filter,
+    value: Task["status"] | Task["priority"]
+  ) => {
+    setFilter((prev) => ({
+      ...prev,
+      [filed]: value,
+    }));
   };
+
+  return {
+    filteredTasks,
+    filter,
+    handleSetFilter,
+  };
+};
+
+export const TaskList: React.FC = () => {
+  const { tasks } = useTasks();
+
+  const { handleSetFilter, filter, filteredTasks } = useTasksFilter(tasks);
+
+  const handleSetFilterStatus = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      handleSetFilter("status", e.target.value as Task["status"]);
+    },
+    []
+  );
+  const handleSetFilterPriority = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      handleSetFilter("priority", e.target.value as Task["priority"]);
+    },
+    []
+  );
 
   return (
     <div>
       {/* 操作欄位 */}
       <h1 className="text-xl font-bold my-3">Control Panel</h1>
       <div className="flex">
-        <select
-          value={filter.status || ""}
-          onChange={(e) =>
-            setFilter((prev) => ({
-              ...prev,
-              status: e.target.value as Task["status"],
-            }))
-          }
-        >
+        <select value={filter.status || ""} onChange={handleSetFilterStatus}>
           <option value="">All Statuses</option>
-          <option value="todo">To Do</option>
-          <option value="in-progress">In Progress</option>
-          <option value="done">Done</option>
+          {TaskStatus.map((status) => (
+            <option key={status} value={status}>
+              {TaskStatusTextMap[status]}
+            </option>
+          ))}
         </select>
 
         <select
           value={filter.priority || ""}
-          onChange={(e) =>
-            setFilter((prev) => ({
-              ...prev,
-              priority: e.target.value as Task["priority"],
-            }))
-          }
+          onChange={handleSetFilterPriority}
         >
           <option value="">All Priorities</option>
-          <option value="low">Low</option>
-          <option value="medium">Medium</option>
-          <option value="high">High</option>
+          {TaskPriorities.map((priority) => (
+            <option key={priority} value={priority}>
+              {TaskPrioritiesTextMap[priority]}
+            </option>
+          ))}
         </select>
       </div>
       {/* task 列表 */}
@@ -97,7 +92,7 @@ export const TaskList: React.FC = () => {
             <p>{task.description}</p>
             <p>Status: {task.status}</p>
             <p>Priority: {task.priority}</p>
-            {renderTaskActions(task)}
+            <TaskActions task={task} />
           </div>
         ))}
       </div>
