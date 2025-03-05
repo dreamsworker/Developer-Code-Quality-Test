@@ -1,4 +1,5 @@
 import { Task } from "../types/task";
+import { v4 as uuidv4 } from "uuid";
 
 export const TaskStatus: Task["status"][] = [
   "todo",
@@ -23,3 +24,5 @@ export const TaskPrioritiesTextMap: Record<Task["priority"], string> = {
   medium: "Medium",
   high: "High",
 } as const;
+
+export const createTaskId = () => uuidv4();

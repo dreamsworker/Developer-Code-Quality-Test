@@ -6,7 +6,7 @@ import React, {
   useMemo,
 } from "react";
 import { Task } from "../types/task";
-import { v4 as uuidv4 } from "uuid";
+import { createTaskId } from "../utils/taskHelper";
 
 interface TaskContextType {
   tasks: Task[];
@@ -22,7 +22,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [tasks, setTasks] = useState<Task[]>([
     {
-      id: uuidv4(),
+      id: createTaskId(),
       title: "Initial Task",
       status: "todo",
       priority: "medium",
@@ -30,7 +30,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
       description: "This is a sample task to start with",
     },
     {
-      id: uuidv4(),
+      id: createTaskId(),
       title: "Second Task",
       status: "todo",
       priority: "high",
@@ -42,7 +42,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
   const addTask = useCallback((taskData: Omit<Task, "id" | "createdAt">) => {
     const newTask: Task = {
       ...taskData,
-      id: uuidv4(),
+      id: createTaskId(),
       createdAt: new Date(),
       status: taskData.status || "todo",
     };
